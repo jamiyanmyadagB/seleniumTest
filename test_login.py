@@ -1,29 +1,35 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager  # download and install the compatible ChromeDriver binary automatically 
-import time # pause
+from selenium.webdriver.chrome.options import Options
+import time
 
-# Open Chrome
-service = Service(ChromeDriverManager().install()) 
-driver = webdriver.Chrome(service=service) # helps to automatically manage the ChromeDriver binary
+# Configure Chrome for GitHub Actions
+options = Options()
+options.add_argument("--headless=new")
+options.add_argument("--no-sandbox")
+options.add_argument("--disable-dev-shm-usage")
+options.add_argument("--disable-gpu")
+options.add_argument("--window-size=1920,1080")
 
-# Go to the site
-driver.get("https://www.saucedemo.com") # typing the url into the browser and hitting enter
+# Launch Chrome
+driver = webdriver.Chrome(options=options)
 
-# Type into username and password boxes
-driver.find_element(By.ID, "user-name").send_keys("standard_user") # By - find particular element on the page
-driver.find_element(By.ID, "password").send_keys("secret_sauce") 
+try:
+    # Open website
+    driver.get("https://www.saucedemo.com")
 
-# Click login
-driver.find_element(By.ID, "login-button").click() # by default, Selenium will wait for the page to load before moving on to the next line of code
+    # Login
+    driver.find_element(By.ID, "user-name").send_keys("standard_user")
+    driver.find_element(By.ID, "password").send_keys("secret_sauce")
+    driver.find_element(By.ID, "login-button").click()
 
-time.sleep(2)  # just so you can SEE it worked
+    time.sleep(2)
 
-# Check we landed on the right page
-if "inventory" in driver.current_url: # check if the current URL contains "inventory"
-    print("✅ Login test PASSED")
-else:
-    print("❌ Login test FAILED")
+    # Verify login
+    if "inventory" in driver.current_url:
+        print("✅ Login test PASSED")
+    else:
+        print("❌ Login test FAILED")
 
-driver.quit() # close the browser window and end the WebDriver session
+finally:
+    driver.quit()
